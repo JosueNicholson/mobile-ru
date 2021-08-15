@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:mobile_ru/helpers/Response.dart';
 import 'package:mobile_ru/models/AvaliacaoModel.dart';
+import 'package:mobile_ru/models/TipoProteinaEnum.dart';
 import 'package:mobile_ru/resources/api_resource.dart';
 import 'package:mobile_ru/resources/storage_resource.dart';
 import 'package:mobile_ru/repository/avaliacao_repository.dart';
@@ -9,6 +11,7 @@ class VotacaoBloc {
   ApiResource _apiResource;
   AvaliacaoModel avaliacao;
   String comentario;
+  String _prefixoComentario;
 
   VotacaoBloc() {
     _storageResource = StorageResource.instance;
@@ -39,7 +42,18 @@ class VotacaoBloc {
     avaliacao.matricula = await _storageResource.getKey(_matricula);
     Map<String, Object> avaliacaoJson = avaliacao.toJson();
     if(comentario.isNotEmpty){
-      avaliacaoJson["comentario"] = comentario;
+      switch (avaliacao.tipoProteina.nameProteina){
+        case 'carneBranca':
+          _prefixoComentario = "Carne branca: ";
+          break;
+        case 'carneVermelha':
+          _prefixoComentario = "Carne vermelha: ";
+          break;
+        case 'vegetariano':
+          _prefixoComentario = "Vegetariano: ";
+          break;
+      }
+      avaliacaoJson["comentario"] = _prefixoComentario + comentario;
     }
     return await AvaliacaoRepository().sendRating(avaliacaoJson);
   }

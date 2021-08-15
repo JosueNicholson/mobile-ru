@@ -13,15 +13,21 @@ class Matricula extends StatefulWidget {
 
 class _MatriculaState extends State<Matricula> {
   TextEditingController _inputMatricula = TextEditingController();
-  bool _validateMatricula = false;
-
+  TextEditingController _inputConfirmacaoMatricula = TextEditingController();
+  bool _validateEmptyMatricula = false;
+  bool _validateEmptyConfirmacaoMatricula = false;
+  bool _validateEquality = false;
+  FocusNode focusNode = FocusNode();
   @override
   Widget build(BuildContext context) {
     VotacaoBloc _votacaoBloc = Get.find();
-
     return Scaffold(
+
       appBar: AppBar(
-        title: Text('Avaliacão Objetiva'),
+        title: Padding(
+          padding: EdgeInsets.only(left: 25),
+          child: Text('Identificação'),
+        ),
         backgroundColor: Color(0xFFBA2B2B),
         actions: [
           IconButton(
@@ -35,15 +41,21 @@ class _MatriculaState extends State<Matricula> {
                       text: TextSpan(
                         style: TextStyle(fontSize: 15, color: Colors.black),
                         children: [
-                          TextSpan(text: "É importante você saber que sua matrícula "),
+                          TextSpan(text: "É importante você estar ciente de que sua matrícula "),
                           TextSpan(text: "não ", style: TextStyle(fontWeight: FontWeight.bold)),
-                          TextSpan(text: "será usada para identificar seu voto, nem para "),
-                          TextSpan(text: "qualquer outro fim que não seja garantir que não haja repetição de voto."),
-                          TextSpan(text: " Sua matrícula será salva somente no seu celular. No nosso banco de dados "),
-                          TextSpan(text: "será gravado somente uma representação criptografada dela.")
+                          TextSpan(text: "será usada para identificar seu voto, nem para qualquer"
+                              " outro fim que não seja garantir que não haja repetição de voto."
+                              " Sua matrícula será salva somente no seu celular. No nosso banco de"
+                              " dados será gravada somente uma representação criptografada dela."),
                         ]
                       )
-                  )
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, 'OK'),
+                      child: const Text('OK'),
+                    ),
+                  ],
                 );
               });
             }
@@ -58,6 +70,44 @@ class _MatriculaState extends State<Matricula> {
             Column(
               children: [
                 Container(
+                  padding: EdgeInsets.all(15),
+                  margin: EdgeInsets.only(bottom: 15),
+                  child: Row(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(right: 10),
+                        child: Icon(Icons.warning_amber_rounded, size: 30),
+                      ),
+                      Flexible(
+                        child: RichText(
+                          text: TextSpan(
+                              style: TextStyle(fontSize: 13, color: Colors.black),
+                              children: [
+                                TextSpan(
+                                  text: "Atenção: Você",
+                                ),
+                                TextSpan(
+                                    text: " não ",
+                                    style: TextStyle(fontWeight: FontWeight.w600)
+                                ),
+                                TextSpan(
+                                    text: "poderá editar sua matrícula após o primeiro voto. Certifique-se de que está correta."
+                                )
+                              ]
+                          ),
+                        )
+                      )
+
+                    ],
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(4)
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.topLeft,
                   child: Text(
                     'Para continuar digite sua matrícula.',
                     style: TextStyle(
@@ -73,27 +123,78 @@ class _MatriculaState extends State<Matricula> {
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Matrícula',
-                    errorText: _validateMatricula ? 'A matrícula não pode ser vazia' : null,
+                    errorText: _validateEmptyMatricula ? 'A matrícula não pode ser vazia' : null,
                   ),
-                )
+                ),
+                Container(
+                  alignment: Alignment.topLeft,
+                  padding: EdgeInsets.only(top: 15),
+                  child: Text(
+                    'Por favor, digite sua matrícula novamente.',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: Color(0xff333333)),
+                  ),
+                  margin: EdgeInsets.only(bottom: 20),
+                ),
+                TextField(
+                  keyboardType: TextInputType.number,
+                  controller: _inputConfirmacaoMatricula,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Confirmação de matrícula',
+                    errorText: () {
+                      if(_validateEmptyConfirmacaoMatricula) return 'A matrícula não pode ser vazia';
+                      else if(_validateEquality) return 'As matrículas não são iguais';
+                    }(),
+                  ),
+                ),
               ],
             ),
             Column(
               children: [
                 ActionButton('Salvar', (){
                   setState((){
-                    _validateMatricula = _inputMatricula.text.isEmpty;
+                    _validateEmptyMatricula = _inputMatricula.text.isEmpty;
+                    _validateEmptyConfirmacaoMatricula = _inputConfirmacaoMatricula.text.isEmpty;
+                    _validateEquality = _inputMatricula.text != _inputConfirmacaoMatricula.text;
                   });
-                  if(_inputMatricula.text.isNotEmpty) {
+                  if(!_validateEmptyMatricula && !_validateEmptyConfirmacaoMatricula && !_validateEquality) {
                     _votacaoBloc.saveMatricula(_inputMatricula.text);
+                    FocusScope.of(context).requestFocus(focusNode);
                     Navigator.push(context, MaterialPageRoute(builder: (context) => AppView()));
+                    showDialog(context: context, builder: (BuildContext context) {
+                      return new AlertDialog(
+                        title: new Text("Informações", textAlign: TextAlign.center),
+                        content: new RichText(
+                            text: TextSpan(
+                                style: TextStyle(fontSize: 15, color: Colors.black),
+                                children: [
+                                  TextSpan(text: "É importante você estar ciente de que sua matrícula "),
+                                  TextSpan(text: "não ", style: TextStyle(fontWeight: FontWeight.bold)),
+                                  TextSpan(text: "será usada para identificar seu voto, nem para qualquer"
+                                      " outro fim que não seja garantir que não haja repetição de voto."
+                                      " Sua matrícula será salva somente no seu celular. No nosso banco de"
+                                      " dados será gravada somente uma representação criptografada dela."),
+                                ]
+                            )
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, 'OK'),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    });
                   }
                 })
               ],
             )
           ],
         ),
-      ),
+      )
     );
   }
 }

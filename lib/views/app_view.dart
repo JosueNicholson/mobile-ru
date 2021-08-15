@@ -41,7 +41,7 @@ class _AppViewState extends State<AppView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ActionButton("Remover matricula", (){_votacaoBloc.removeMatricula();}),
+            ActionButton("Remover matricula", (){_votacaoBloc.removeMatricula();}),
             Container(
               margin: EdgeInsets.only(bottom: 25),
               child: RichText(

@@ -6,7 +6,7 @@ import 'package:mobile_ru/helpers/app_exceptions.dart';
 
 class ApiResource {
   Client http = Client();
-  int _port = 0;
+  int _port =0;
   String _protocol = "https";
   String _host = "";
   static String _token;
@@ -31,6 +31,7 @@ class ApiResource {
       final response = await http.get(Uri(
           scheme: _protocol,
           host: _host,
+          port: _port,
           path: path), headers: { "Authorization": "Bearer "+_token });
       responseJson = _defaultResponse(response);
     } on PreconditionFailedException {
@@ -61,6 +62,7 @@ class ApiResource {
         Uri(
             scheme: _protocol,
             host: _host,
+            port: _port,
             path: path),
         body: isJson ? jsonEncode(body) : body,
         headers: headers,
@@ -93,6 +95,7 @@ class ApiResource {
         Uri(
             scheme: _protocol,
             host: _host,
+            port: _port,
             path: path),
         body: isJson ? jsonEncode(body) : body,
         headers: headers,
